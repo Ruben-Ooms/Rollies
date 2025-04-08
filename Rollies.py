@@ -22,10 +22,9 @@ class DNDRoller:
                     if(n.lstrip("-").isnumeric()):
                         self.numMod+=int(n)
                     else:
-                        print("Numerical modifiers must be positive integers.")
+                        print("Numerical modifiers must be positive integers.\n")
                         return False
             
-
             # if no d is found
             if(uP.find("d")==-1): 
                 n="1" # 1 die needs to be rolled
@@ -33,7 +32,7 @@ class DNDRoller:
             else: # if d is found
                 # if multiple d error
                 if(uP.count("d")>1):
-                    print("Individual input can not contain more than one 'd'.")
+                    print("Individual input can not contain more than one 'd'.\n")
                     return True
                 # before d is how many die need to be rolled and after is faces
                 n=uP.split("d")[0] 
@@ -41,7 +40,7 @@ class DNDRoller:
 
             # if n is not numeric error
             if(not n.isdigit() or int(n)==0):
-                print("Number of die must be positive integer.")
+                print("Number of die must be positive integer.\n")
                 return True
             n=int(n)
 
@@ -51,7 +50,7 @@ class DNDRoller:
             for i in modList:
                 modCount+=m.count(i);
             if(modCount>1):
-                print("Only one modifier can be applied at once.")
+                print("Only one modifier can be applied at once.\n")
                 return True
 
             # setting modifier
@@ -69,7 +68,7 @@ class DNDRoller:
 
             # if m is not numeric error
             if(not m.isdigit() or int(m)==0):
-                print("Number of faces must be a positive integer.")
+                print("Number of faces must be a positive integer.\n")
                 return True
             m=int(m)
 
@@ -114,28 +113,32 @@ class DNDRoller:
                 dieResult+="\tUnused rolls: "
                 width=[];
                 for i in range(len(d.badValues)):
-                    width.append(len(str(max(d.values[i]+self.numMod,d.badValues[i]+self.numMod))))
-                    dieResult+=f"{d.badValues[i]+self.numMod:>{width[i]}} "
+                    v=d.values[i]+self.numMod
+                    b=d.badValues[i]+self.numMod
+                    width.append(len(str(max(v,b))))
+                    dieResult+=f"{b:>{width[i]}} "
                 dieResult+="\n"
                 # print row of good values
                 dieResult+="\tUsed rolls:   "
                 for i in range(len(d.values)):
-                    dieResult+=f"{d.values[i]+self.numMod:>{width[i]}} "
+                    dieResult+=f"{v:>{width[i]}} "
             # if there are only good values
             elif(d.n>1): 
                 dieResult+="\tRolls: "
-                for i in range(len(d.values+self.numMod)):
+                for i in range(len(d.values)):
                     dieResult+=f"{d.values[i]+self.numMod} "
             # only 1 roll with bad roll
             elif(d.a!="none"): 
                 # print bad value
+                v=d.values[0]+self.numMod
+                b=d.badValues[0]+self.numMod
                 dieResult+="\tUnused roll: "
-                width=len(str(max(d.values[0],d.badValues[0])))
-                dieResult+=f"{d.badValues[0]+self.numMod:>{width}} "
+                width=len(str(max(v,b)))
+                dieResult+=f"{b:>{width}} "
                 dieResult+="\n"
                 # print good value
                 dieResult+="\tUsed roll:   "
-                dieResult+=f"{d.values[0]+self.numMod:>{width}} "
+                dieResult+=f"{v:>{width}} "
             # only 1 roll, no bad roll
             else: 
                 dieResult+="\tRoll: "
@@ -149,7 +152,7 @@ class DNDRoller:
                 self.total+tempTotal
             else:
                 dieResult+="\n"
-                self.total+=d.total 
+                self.total+=d.total+self.numMod
             result+=dieResult.replace(str(d.m+self.numMod),f"\033[1;4m{d.m+self.numMod}\033[0m")
         
         # print final total
@@ -197,7 +200,7 @@ class AnimonRoller:
 
             # if n is not numeric error
             if(not n.isdigit() or int(n)==0):
-                print("Number of die must be positive integer.")
+                print("Number of die must be positive integer.\n")
                 return True
             n=int(n)
 
@@ -342,12 +345,17 @@ def getGame():
             game=game.title()   
     return game
 
+def helper():
+    helperStr="""    Enter "help" for an explanation of how to roll in this game.
+    Enter "select" to change game.
+    Enter "exit" to exit the program.
+"""
+    return helperStr
+
 def main():
     # setup of the program
     game=getGame()
-    print('\tEnter "help" for an explanation of how to roll in this game.')
-    print('\tEnter "select" to change game.')
-    print('\tEnter "exit" to exit the program.')
+    print(helper())
     print("Game set to",game+".")
     # main program loop
     while(True):
@@ -363,8 +371,10 @@ def main():
             print(tray.help())
             continue
         elif(userIn.upper()=="SELECT"):
+            print()
             game=getGame()
-            print("Game changed to",game+".")
+            print("\nGame changed to",game+".")
+            print(helper())
             continue
         elif(userIn.upper()=="EXIT"):
             quit()
