@@ -366,6 +366,8 @@ class FabRoller(Roller):
             else:
                 result+=f"Result for {d1.m} and {d2.m} roll"
 
+            crit=[]
+            high=[]
             width=[]
             subtotals=[]
 
@@ -374,34 +376,64 @@ class FabRoller(Roller):
             for n in range(self.multiplicity[i]):
                 v=d2.values[n]
                 b=d1.values[n]
+                if(b==v and b>=6):
+                    crit.append(True)
+                    high.append(True)
+                elif(b==v and b>1):
+                    crit.append(False)
+                    high.append(True)
+                elif(b>v):
+                    crit.append(False)
+                    high.append(True)
+                else:
+                    crit.append(False)
+                    high.append(False)
                 subtotals.append(v+b+self.numMod[i])
                 width.append(len(str(max(v,b,subtotals[n]))))
                 dieResult+=f"{b:>{width[n]}} "
-
-            result+=dieResult.replace(str(d1.m),f"\033[1;4m{d1.m}\033[0m")+"\n"
+                if(crit[n] or high[n]):
+                    result+=dieResult.replace(str(b),f"\033[1;4m{b}\033[0m")
+                elif(v==1 and b==1):
+                    result+=dieResult.replace(str(b),f"\033[1;4;31m{b}\033[0m")
+                else:
+                    result+=dieResult
+                dieResult=""
+            result+="\n"
 
             # print row of second rolls
             dieResult="\tSecond Roll: "
             for n in range(self.multiplicity[i]):
                 v=d2.values[n]
+                b=d1.values[n]
                 dieResult+=f"{v:>{width[n]}} "
-
-            result+=dieResult.replace(str(d2.m),f"\033[1;4m{d2.m}\033[0m")
+                if(crit[n] or (not high[n] and b!=v)):
+                    result+=dieResult.replace(str(v),f"\033[1;4m{v}\033[0m")
+                elif(v==1 and b==1):
+                    result+=dieResult.replace(str(b),f"\033[1;4;31m{b}\033[0m")
+                else:
+                    result+=dieResult
+                dieResult=""
 
             if(len(subtotals)==1):
                 dieResult="\n\tTotal:       "
                 dieResult+=f"{subtotals[0]:>{width[0]}} "
-                result+=dieResult.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[0]}\033[0m")
+                if(subtotals[0]==2+self.numMod[0]):
+                    dieResult=dieResult.replace(str(2+self.numMod[i]),f"\033[1;4;31m{2+self.numMod[i]}\033[0m")+"\n"
+                #result+=dieResult#.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[0]}\033[0m")
+                result+=dieResult
             else:
                 total=0
                 dieResult="\n\tSubtotals:   "
                 for n in range(self.multiplicity[i]):
                     dieResult+=f"{subtotals[n]:>{width[n]}} "
-                    result+=dieResult.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[n]}\033[0m")
+                    #result+=dieResult#.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[n]}\033[0m")
+                    if(subtotals[n]==2+self.numMod[i]):
+                        dieResult=dieResult.replace(str(2+self.numMod[i]),f"\033[1;4;31m{2+self.numMod[i]}\033[0m")
+                    result+=dieResult
                     dieResult=""
                     total+=subtotals[n]
                 result+=f"\n\tTotal: {total}"
-            result+="\n"
+                
 
         return result
 
@@ -409,7 +441,14 @@ class FabRoller(Roller):
         # return Fab help string
 
         helpStr="""
-    TEMP
+    This app can perform roles for Fabula Ultimate.
+    All roles are performed with a two dice. The user can enter a single number or two seperated by a comma. Example: 8 or 8,3
+
+    Roll Modifiers:
+    A numerical modifier can be used by appending a "+a" where a is the number you wish to add to the subtotal of the two rolled dice. Example: 8,3+5
+    Multiplicity allows the user to perform the same roll numberous times. This is performed by prepending a "ax" where a is the number of times you wish to perform the roll. Example 3x8,3+5
+
+    Multiple rolls can be performed at once by adding a space between them.
 """
         return helpStr
 
