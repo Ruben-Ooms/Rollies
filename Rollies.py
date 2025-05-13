@@ -4,7 +4,7 @@ class DNDRoller:
     def __init__(self):
         self.dice=[]
         self.total=0
-        self.numMod=0
+        self.numMod=[]
 
     def parser(self,unParsed):
         # understands the user input for number of dice, 
@@ -18,12 +18,16 @@ class DNDRoller:
             if(uP.find("+")!=-1):
                 numMods=uP.split("+")[1:]
                 uP=uP.split("+")[0]
+                tempNumMod=0
                 for n in numMods:
                     if(n.lstrip("-").isnumeric()):
-                        self.numMod+=int(n)
+                        tempNumMod+=int(n)
                     else:
                         print("Numerical modifiers must be positive integers.\n")
-                        return False
+                        return True
+                self.numMod.append(tempNumMod)
+            else:
+                self.numMod.append(0)
             
             # if no d is found
             if(uP.find("d")==-1): 
@@ -85,7 +89,8 @@ class DNDRoller:
         # creates a result string to be printed in main
 
         result=""
-        for d in self.dice:
+        for i in range(len(self.dice)):
+            d=self.dice[i]
             # special print for 1 die being rolled
             if(d.n==1):
                 result+=f"Result for {d.m}"
@@ -100,11 +105,11 @@ class DNDRoller:
                 dieResult+=" with disadvantage"
             elif(d.a=="emphasis"): # emphasis
                 dieResult+=" with emphasis"
-            if(self.numMod!=0):
+            if(self.numMod[i]!=0):
                 if(d.a=="none"):
-                    dieResult+=f" with {self.numMod} modifier"
+                    dieResult+=f" with {self.numMod[i]} modifier"
                 else:
-                    dieResult+=f" and {self.numMod} modifier"
+                    dieResult+=f" and {self.numMod[i]} modifier"
             dieResult+=".\n"
 
             # if there are bad values
@@ -112,26 +117,27 @@ class DNDRoller:
                 # print row of bad values
                 dieResult+="\tUnused rolls: "
                 width=[];
-                for i in range(len(d.badValues)):
-                    v=d.values[i]+self.numMod
-                    b=d.badValues[i]+self.numMod
+                for n in range(len(d.badValues)):
+                    v=d.values[n]+self.numMod[i]
+                    b=d.badValues[n]+self.numMod[i]
                     width.append(len(str(max(v,b))))
-                    dieResult+=f"{b:>{width[i]}} "
+                    dieResult+=f"{b:>{width[n]}} "
                 dieResult+="\n"
                 # print row of good values
                 dieResult+="\tUsed rolls:   "
-                for i in range(len(d.values)):
-                    dieResult+=f"{v:>{width[i]}} "
+                for n in range(len(d.values)):
+                    v=d.values[n]+self.numMod[i]
+                    dieResult+=f"{v:>{width[n]}} "
             # if there are only good values
             elif(d.n>1): 
                 dieResult+="\tRolls: "
-                for i in range(len(d.values)):
-                    dieResult+=f"{d.values[i]+self.numMod} "
+                for n in range(len(d.values)):
+                    dieResult+=f"{d.values[n]+self.numMod[i]} "
             # only 1 roll with bad roll
             elif(d.a!="none"): 
                 # print bad value
-                v=d.values[0]+self.numMod
-                b=d.badValues[0]+self.numMod
+                v=d.values[0]+self.numMod[i]
+                b=d.badValues[0]+self.numMod[i]
                 dieResult+="\tUnused roll: "
                 width=len(str(max(v,b)))
                 dieResult+=f"{b:>{width}} "
@@ -142,18 +148,18 @@ class DNDRoller:
             # only 1 roll, no bad roll
             else: 
                 dieResult+="\tRoll: "
-                dieResult+=f"{d.values[0]+self.numMod}"
+                dieResult+=f"{d.values[0]+self.numMod[i]}"
 
             # print subtotal of rolls
             d.totaler()
             if(d.n>1 and len(self.dice)>1):
-                tempTotal=d.total+self.n*self.numMod
-                dieResult+=f" Subtotal: {d.tempTotal}\n"
-                self.total+tempTotal
+                tempTotal=d.total+d.n*self.numMod[i]
+                dieResult+=f"\n\tSubtotal: {tempTotal}\n"
+                self.total+=tempTotal
             else:
                 dieResult+="\n"
-                self.total+=d.total+self.numMod
-            result+=dieResult.replace(str(d.m+self.numMod),f"\033[1;4m{d.m+self.numMod}\033[0m")
+                self.total+=d.total+self.numMod[i]
+            result+=dieResult.replace(str(d.m+self.numMod[i]),f"\033[1;4m{d.m+self.numMod[i]}\033[0m")
         
         # print final total
         result+=f"Total: {self.total}\n" 
@@ -255,6 +261,7 @@ class AnimonRoller:
             for i in range(len(d.values)):
                 if d.values[i]>3-offset:
                     successes+=1
+            #result+=f"\n\tSuccesses: {successes}\n"
             result+=f"Successes: {successes}\n"
             
 
