@@ -31,3 +31,12 @@ To perform a roll with boost, append a "B" to a basic roll.
 Multiple can be appended and the effective number of setbacks or boosts will be caluclated.  
   
 Multiple rolls can be performed at once by adding a space between them.  
+
+### Fabula Ultima
+All roles are performed with a two dice. The user can enter a single number or two seperated by a comma. Example: 8 or 8,3
+
+Roll Modifiers:
+A numerical modifier can be used by appending a "+a" where a is the number you wish to add to the subtotal of the two rolled dice. Example: 8,3+5
+Multiplicity allows the user to perform the same roll numberous times. This is performed by prepending a "ax" where a is the number of times you wish to perform the roll. Example 3x8,3+5
+
+Multiple rolls can be performed at once by adding a space between them.
