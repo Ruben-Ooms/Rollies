@@ -1,6 +1,14 @@
 from random import randrange as rand
 
-class DNDRoller:
+class Roller:
+    def release(self):
+        # release the die to roll all of them
+
+        for d in self.dice:
+            d.roll()
+
+
+class DNDRoller(Roller):
     def __init__(self):
         self.dice=[]
         self.total=0
@@ -23,7 +31,7 @@ class DNDRoller:
                     if(n.lstrip("-").isnumeric()):
                         tempNumMod+=int(n)
                     else:
-                        print("Numerical modifiers must be positive integers.\n")
+                        print("Numerical modifiers must be an integer.\n")
                         return True
                 self.numMod.append(tempNumMod)
             else:
@@ -44,7 +52,7 @@ class DNDRoller:
 
             # if n is not numeric error
             if(not n.isdigit() or int(n)==0):
-                print("Number of die must be positive integer.\n")
+                print("Number of die must be a positive integer.\n")
                 return True
             n=int(n)
 
@@ -78,12 +86,6 @@ class DNDRoller:
 
             self.dice.append(Die(n,m,a))
         return False
-
-    def release(self):
-        # release the die to roll all of them
-
-        for d in self.dice:
-            d.roll()
 
     def result(self):
         # creates a result string to be printed in main
@@ -186,7 +188,7 @@ class DNDRoller:
 """
         return helpStr
 
-class AnimonRoller:
+class AnimonRoller(Roller):
     def __init__(self):
         self.dice=[]
         self.total=0
@@ -206,7 +208,7 @@ class AnimonRoller:
 
             # if n is not numeric error
             if(not n.isdigit() or int(n)==0):
-                print("Number of die must be positive integer.\n")
+                print("Number of die must be a positive integer.\n")
                 return True
             n=int(n)
 
@@ -214,12 +216,6 @@ class AnimonRoller:
             a="none"
             self.dice.append(Die(n,animonDieSides,a))
         return False
-
-    def release(self):
-        # release the die to roll all of them
-
-        for d in self.dice:
-            d.roll()
 
     def result(self):
         # creates a result string to be printed in main
@@ -283,6 +279,140 @@ class AnimonRoller:
 """
         return helpStr
 
+class FabRoller(Roller):
+    # Fabula Ultima
+    def __init__(self):
+        self.dice1=[]
+        self.dice2=[]
+        self.total=0
+        self.numMod=[]
+        self.multiplicity=[]
+
+    def parser(self,unParsed):
+        # understands the user input for number of dice, 
+        # number of sides, and modifiers
+
+        # m is sides of die
+        for uP in unParsed:
+            # get multiplicity
+            if(uP.find("x")!=-1):
+                tempMultiplicity=uP.split("x")[0]
+                uP=uP.split("x")[1]
+                if(tempMultiplicity.isnumeric()):
+                    self.multiplicity.append(int(tempMultiplicity))
+                else:
+                    print("Multiplicity must be a positive integer.\n")
+                    return True
+            else:
+                self.multiplicity.append(1)
+
+            # get numerical modifier total
+            if(uP.find("+")!=-1):
+                numMods=uP.split("+")[1:]
+                uP=uP.split("+")[0]
+                tempNumMod=0
+                for n in numMods:
+                    if(n.lstrip("-").isnumeric()):
+                        tempNumMod+=int(n)
+                    else:
+                        print("Numerical modifiers must be an integer.\n")
+                        return True
+                self.numMod.append(tempNumMod)
+            else:
+                self.numMod.append(0)
+            
+            # if no , is found
+            if(uP.find(",")==-1): 
+                m1=uP # then both die have the same number of sides
+                m2=m1
+            else: # if , is found
+                # if multiple , error
+                if(uP.count(",")>1):
+                    print("Individual input can not contain more than one ','.\n")
+                    return True
+                # before d is how many die need to be rolled and after is faces
+                m1=uP.split(",")[0] 
+                m2=uP.split(",")[1]
+
+            # if m is not numeric error
+            for m in [m1,m2]:
+                if(not m.isdigit() or int(m)==0):
+                    print("Number of faces must be a positive integer.\n")
+                    return True
+            m1=int(m1)
+            m2=int(m2)
+
+            self.dice1.append(Die(self.multiplicity[-1],m1,"none")) # no modifier
+            self.dice2.append(Die(self.multiplicity[-1],m2,"none"))
+        return False
+
+    def release(self):
+        # release the die to roll all of them
+
+        for i in range(len(self.dice1)):
+            self.dice1[i].roll()
+            self.dice2[i].roll()
+
+    def result(self):
+        # creates a result string to be printed in main
+
+        result=""
+        for i in range(len(self.dice1)):
+            d1=self.dice1[i]
+            d2=self.dice2[i]
+
+            if(d1.m==d2.m):
+                result+=f"Result for two {d1.m} rolls"
+            else:
+                result+=f"Result for {d1.m} and {d2.m} roll"
+
+            width=[]
+            subtotals=[]
+
+            # print row of first rolls
+            dieResult="\n\tFirst Roll:  "
+            for n in range(self.multiplicity[i]):
+                v=d2.values[n]
+                b=d1.values[n]
+                subtotals.append(v+b+self.numMod[i])
+                width.append(len(str(max(v,b,subtotals[n]))))
+                dieResult+=f"{b:>{width[n]}} "
+
+            result+=dieResult.replace(str(d1.m),f"\033[1;4m{d1.m}\033[0m")+"\n"
+
+            # print row of second rolls
+            dieResult="\tSecond Roll: "
+            for n in range(self.multiplicity[i]):
+                v=d2.values[n]
+                dieResult+=f"{v:>{width[n]}} "
+
+            result+=dieResult.replace(str(d2.m),f"\033[1;4m{d2.m}\033[0m")
+
+            if(len(subtotals)==1):
+                dieResult="\n\tTotal:       "
+                dieResult+=f"{subtotals[0]:>{width[0]}} "
+                result+=dieResult.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[0]}\033[0m")
+            else:
+                total=0
+                dieResult="\n\tSubtotals:   "
+                for n in range(self.multiplicity[i]):
+                    dieResult+=f"{subtotals[n]:>{width[n]}} "
+                    result+=dieResult.replace(str(d1.m+d2.m+self.numMod[i]),f"\033[1;4m{subtotals[n]}\033[0m")
+                    dieResult=""
+                    total+=subtotals[n]
+                result+=f"\n\tTotal: {total}"
+            result+="\n"
+
+        return result
+
+    def help(self):
+        # return Fab help string
+
+        helpStr="""
+    TEMP
+"""
+        return helpStr
+
 class Die:
     def __init__(self,n,m,a):
         self.n=n # number of die
@@ -340,16 +470,18 @@ class Die:
 
 def getGame():
     # ensures the user enters a valid game
-    print("Enter DND or Animon to select game.")
+    print("Enter DND, Animon, FU (Fabula Ultima) to select game.")
     game=""
-    validGames=["DND","ANIMON"]
-    while(game.upper() not in validGames):
+    validGames=["DND","Animon","Fabula Ultima"]
+    while(game not in validGames):
         game=input("Enter game: ")
         game=game.split(" ")[0]
         if(game.upper()=="DND"):
             game=game.upper()
+        elif(game.upper()=="FU"):
+            game="Fabula Ultima"
         else:
-            game=game.title()   
+            game=game.title() 
     return game
 
 def helper():
@@ -367,10 +499,12 @@ def main():
     # main program loop
     while(True):
         # initalize the game roller
-        if(game.upper()=="DND"):
+        if(game=="DND"):
             tray=DNDRoller()
-        elif(game.upper()=="ANIMON"):
+        elif(game=="Animon"):
             tray=AnimonRoller()
+        elif(game=="Fabula Ultima"):
+            tray=FabRoller()
 
         userIn=input("Enter dice roll(s): ")
         # special cases for user non roll inputs
