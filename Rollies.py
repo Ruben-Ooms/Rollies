@@ -4,16 +4,31 @@ class DNDRoller:
     def __init__(self):
         self.dice=[]
         self.total=0
+        self.numMod=[]
 
-    # the parser will fill rolls with information about each roll
     def parser(self,unParsed):
         # understands the user input for number of dice, 
         # number of sides, and modifiers
 
         # n is number of dice
         # m is sides of die
-         #a is modifier
+        # a is modifier
         for uP in unParsed:
+            # get numerical modifier total
+            if(uP.find("+")!=-1):
+                numMods=uP.split("+")[1:]
+                uP=uP.split("+")[0]
+                tempNumMod=0
+                for n in numMods:
+                    if(n.lstrip("-").isnumeric()):
+                        tempNumMod+=int(n)
+                    else:
+                        print("Numerical modifiers must be positive integers.\n")
+                        return True
+                self.numMod.append(tempNumMod)
+            else:
+                self.numMod.append(0)
+            
             # if no d is found
             if(uP.find("d")==-1): 
                 n="1" # 1 die needs to be rolled
@@ -21,15 +36,15 @@ class DNDRoller:
             else: # if d is found
                 # if multiple d error
                 if(uP.count("d")>1):
-                    print("Individual input can not contain more than one 'd'.")
+                    print("Individual input can not contain more than one 'd'.\n")
                     return True
-                # before d is how many die need to be rolled
+                # before d is how many die need to be rolled and after is faces
                 n=uP.split("d")[0] 
                 m=uP.split("d")[1]
 
             # if n is not numeric error
-            if(not n.isdigit()):
-                print("Number of die must be positive integer.")
+            if(not n.isdigit() or int(n)==0):
+                print("Number of die must be positive integer.\n")
                 return True
             n=int(n)
 
@@ -39,7 +54,7 @@ class DNDRoller:
             for i in modList:
                 modCount+=m.count(i);
             if(modCount>1):
-                print("Only one modifier can be applied at once.")
+                print("Only one modifier can be applied at once.\n")
                 return True
 
             # setting modifier
@@ -56,13 +71,13 @@ class DNDRoller:
                 a="none"
 
             # if m is not numeric error
-            if(not m.isdigit()):
-                print("Number of faces must be a positive integer.")
+            if(not m.isdigit() or int(m)==0):
+                print("Number of faces must be a positive integer.\n")
                 return True
             m=int(m)
 
             self.dice.append(Die(n,m,a))
-            return False
+        return False
 
     def release(self):
         # release the die to roll all of them
@@ -74,83 +89,100 @@ class DNDRoller:
         # creates a result string to be printed in main
 
         result=""
-        for d in self.dice:
+        for i in range(len(self.dice)):
+            d=self.dice[i]
             # special print for 1 die being rolled
             if(d.n==1):
                 result+=f"Result for {d.m}"
             else:
                 result+=f"Result for {d.n}d{d.m}"
+
             # special print events
+            dieResult=""
             if(d.a=="advantage"): # advantage
-                result+=" with advantage"
+                dieResult+=" with advantage"
             elif(d.a=="disadvantage"): # disadvantage
-                result+=" with disadvantage"
+                dieResult+=" with disadvantage"
             elif(d.a=="emphasis"): # emphasis
-                result+=" with emphasis"
-            result+=".\n"
+                dieResult+=" with emphasis"
+            if(self.numMod[i]!=0):
+                if(d.a=="none"):
+                    dieResult+=f" with {self.numMod[i]} modifier"
+                else:
+                    dieResult+=f" and {self.numMod[i]} modifier"
+            dieResult+=".\n"
 
             # if there are bad values
             if(d.a!="none" and d.n>1):
                 # print row of bad values
-                result+="\tUnused rolls: "
+                dieResult+="\tUnused rolls: "
                 width=[];
-                for i in range(len(d.badValues)):
-                    width.append(len(str(max(d.values[i],d.badValues[i]))))
-                    result+=f"{d.badValues[i]:>{width[i]}} "
-                result+="\n"
+                for n in range(len(d.badValues)):
+                    v=d.values[n]+self.numMod[i]
+                    b=d.badValues[n]+self.numMod[i]
+                    width.append(len(str(max(v,b))))
+                    dieResult+=f"{b:>{width[n]}} "
+                dieResult+="\n"
                 # print row of good values
-                result+="\tUsed rolls:   "
-                for i in range(len(d.values)):
-                    result+=f"{d.values[i]:>{width[i]}} "
+                dieResult+="\tUsed rolls:   "
+                for n in range(len(d.values)):
+                    v=d.values[n]+self.numMod[i]
+                    dieResult+=f"{v:>{width[n]}} "
             # if there are only good values
             elif(d.n>1): 
-                result+="\tRolls: "
-                for i in range(len(d.values)):
-                    result+=f"{d.values[i]} "
+                dieResult+="\tRolls: "
+                for n in range(len(d.values)):
+                    dieResult+=f"{d.values[n]+self.numMod[i]} "
             # only 1 roll with bad roll
             elif(d.a!="none"): 
                 # print bad value
-                result+="\tUnused roll: "
-                width=len(str(max(d.values[0],d.badValues[0])))
-                result+=f"{d.badValues[0]:>{width}} "
-                result+="\n"
+                v=d.values[0]+self.numMod[i]
+                b=d.badValues[0]+self.numMod[i]
+                dieResult+="\tUnused roll: "
+                width=len(str(max(v,b)))
+                dieResult+=f"{b:>{width}} "
+                dieResult+="\n"
                 # print good value
-                result+="\tUsed roll:   "
-                result+=f"{d.values[0]:>{width}} "
+                dieResult+="\tUsed roll:   "
+                dieResult+=f"{v:>{width}} "
             # only 1 roll, no bad roll
             else: 
-                result+="\tRoll: "
-                result+=f"{d.values[0]}"
+                dieResult+="\tRoll: "
+                dieResult+=f"{d.values[0]+self.numMod[i]}"
 
             # print subtotal of rolls
             d.totaler()
             if(d.n>1 and len(self.dice)>1):
-                result+=f"\tSubtotal: {d.total}\n"
-                self.total+=d.total
+                tempTotal=d.total+d.n*self.numMod[i]
+                dieResult+=f"\n\tSubtotal: {tempTotal}\n"
+                self.total+=tempTotal
             else:
-                result+="\n"
-                self.total+=d.total     
+                dieResult+="\n"
+                self.total+=d.total+self.numMod[i]
+            result+=dieResult.replace(str(d.m+self.numMod[i]),f"\033[1;4m{d.m+self.numMod[i]}\033[0m")
         
         # print final total
-        result+=f"Total: {self.total}\n"  
+        result+=f"Total: {self.total}\n" 
         return result
 
     def help(self):
         # return DND help string
 
         helpStr="""
-    This app can perform roles for DND. These include single, multi die, advantage, disadvantage, and emphasis rolls.
+    This app can perform roles for DND. 
+    These include single, multi die, advantage, disadvantage, and emphasis rolls.
 
     Basic Rolls:
-    To perform a single roll enter a single number.
-    To perform a multroll enter the number of dice and then the number of die sides seperated by a "d". Example: 5d6
+    To perform a single roll, enter a single number.
+    To perform a multiroll, enter the number of dice and then the number of die sides seperated by a "d". Example: 5d6
 
     Roll Modifiers:
     To perform a roll with advantage, append an "A" to a basic roll.
     To perform a roll with disadvantage, append a "D" to a basic roll.
     To perform a roll with emphasis, append an "E" to a basic roll.
+    A numerical modifier can be used by appending a "+x" where x is the number you wish to add. Example: 8+5
 
-    Multiple rolls can be performed at once by adding a space between them. However, only one modifier can be applied to each roll.
+    Multiple rolls can be performed at once by adding a space between them. However, only one modifier can be applied to each roll, excluding numerical modifier.
 """
         return helpStr
 
@@ -158,24 +190,23 @@ class AnimonRoller:
     def __init__(self):
         self.dice=[]
         self.total=0
-        self.b=0
-        self.s=0
+        self.b=[]
+        self.s=[]
 
-    # the parser will fill rolls with information about each roll
     def parser(self,unParsed):
         # understands the user input for number of dice and modifiers
 
         # n is number of dice
         # a is modifier
         for uP in unParsed:
-            self.b=uP.count("B")
-            self.s=uP.count("S")
+            self.b.append(uP.count("B"))
+            self.s.append(uP.count("S"))
             n=uP.split("B")[0]
-            n=uP.split("S")[0]
+            n=n.split("S")[0]
 
             # if n is not numeric error
-            if(not n.isdigit()):
-                print("Number of die must be positive integer.")
+            if(not n.isdigit() or int(n)==0):
+                print("Number of die must be positive integer.\n")
                 return True
             n=int(n)
 
@@ -195,40 +226,44 @@ class AnimonRoller:
 
         result=""
         #d=self.dice[0]
-        for d in self.dice:
-            # special print for 1 die being rolled
+        for i in range(len(self.dice)):
+            d=self.dice[i]
             result+=f"Result for {d.n} rolls"
 
             # special print events
-            offset=self.b-self.s
+            offset=self.b[i]-self.s[i]
             if(offset>0): # totall boost
                 if(offset==1):
-                    result+=f" with {self.s} boost."
+                    result+=f" with {offset} boost"
                 else:
-                    result+=f" with {self.s} boosts."
+                    result+=f" with {offset} boosts"
             elif(offset<0): # total setback
-                if(offset==-11):
-                    result+=f" with {self.s} setback."
+                if(offset==-1):
+                    result+=f" with {abs(offset)} setback"
                 else:
-                    result+=f" with {self.s} setbackss."
+                    result+=f" with {abs(offset)} setbacks"
             result+=".\n"
 
-            # if there are only good values
+            # if there is more than 1 roll
+            dieResult=""
             if(d.n>1): 
-                result+="\tRolls: "
+                dieResult+="\tRolls: "
                 for i in range(len(d.values)):
-                    result+=f"{d.values[i]} "
-            # only 1 roll, no bad roll
+                    dieResult+=f"{d.values[i]} "
+            # only 1 roll
             else: 
-                result+="\tRoll: "
-                result+=f"{d.values[0]}"
+                dieResult+="\tRoll: "
+                dieResult+=f"{d.values[0]} "
+            result+=dieResult.replace(str(d.m),f"\033[1;4m{d.m}\033[0m")
 
             # print number of successes of rolls
             successes=0
             for i in range(len(d.values)):
                 if d.values[i]>3-offset:
                     successes+=1
+            #result+=f"\n\tSuccesses: {successes}\n"
             result+=f"Successes: {successes}\n"
+            
 
         return result
 
@@ -305,6 +340,7 @@ class Die:
 
 def getGame():
     # ensures the user enters a valid game
+    print("Enter DND or Animon to select game.")
     game=""
     validGames=["DND","ANIMON"]
     while(game.upper() not in validGames):
@@ -316,14 +352,18 @@ def getGame():
             game=game.title()   
     return game
 
+def helper():
+    helperStr="""    Enter "help" for an explanation of how to roll in this game.
+    Enter "select" to change game.
+    Enter "exit" to exit the program.
+"""
+    return helperStr
+
 def main():
     # setup of the program
-    print("Enter DND or Animon to select game.")
     game=getGame()
-    print("Game set to",game,".")
-    print('\tEnter "help" for an explanation of how to roll in this game.')
-    print('\tEnter "select" to change game.')
-    print('\tEnter "exit" to exit the program.')
+    print(helper())
+    print("Game set to",game+".")
     # main program loop
     while(True):
         # initalize the game roller
@@ -338,22 +378,23 @@ def main():
             print(tray.help())
             continue
         elif(userIn.upper()=="SELECT"):
+            print()
             game=getGame()
-            print("Game changed to",game,".")
+            print("\nGame changed to",game+".")
+            print(helper())
             continue
         elif(userIn.upper()=="EXIT"):
             quit()
 
         # split input for each roll
-        individualUP=userIn.split(" ")
+        individualUP=userIn.split()
         # parse the input
-        if(tray.parser(individualUP)): # has an errors
+        if(tray.parser(individualUP)): # has an error
             continue
         # roll all the dice
         tray.release()
         # print the result of the rolls
-        print(tray.result())
-        print()        
+        print(tray.result())    
 
 if __name__=="__main__":
     main()
