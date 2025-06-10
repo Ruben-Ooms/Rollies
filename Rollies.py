@@ -322,17 +322,23 @@ class FabRoller(Roller):
                 self.numMod.append(0)
             
             # if no , is found
-            if(uP.find(",")==-1): 
+            if(uP.find(",")==-1 and uP.find(".")==-1): 
                 m1=uP # then both die have the same number of sides
                 m2=m1
             else: # if , is found
                 # if multiple , error
-                if(uP.count(",")>1):
+                commaCount=uP.count(",")
+                periodCount=uP.count(".")
+                if(commaCount+periodCount>1):
                     print("Individual input can not contain more than one ','.\n")
                     return True
                 # before d is how many die need to be rolled and after is faces
-                m1=uP.split(",")[0] 
-                m2=uP.split(",")[1]
+                if(commaCount):
+                    m1=uP.split(",")[0] 
+                    m2=uP.split(",")[1]
+                elif(periodCount):
+                    m1=uP.split(".")[0] 
+                    m2=uP.split(".")[1]
 
             # if m is not numeric error
             for m in [m1,m2]:
