@@ -33,10 +33,14 @@ Multiple can be appended and the effective number of setbacks or boosts will be 
 Multiple rolls can be performed at once by adding a space between them.  
 
 ### Fabula Ultima
-All roles are performed with a two dice. The user can enter a single number or two seperated by a comma. Example: 8 or 8,3  
+All rolls are performed with two dice. You can enter a single number to roll the same number twice, or two numbers separated by a comma.
+    Example: "8" rolls (2d8). "8,3" rolls (1d8+1d3).
 
-Roll Modifiers:  
-A numerical modifier can be used by appending a "+a" where a is the number you wish to add to the subtotal of the two rolled dice. Example: 8,3+5  
-Multiplicity allows the user to perform the same roll numberous times. This is performed by prepending a "ax" where a is the number of times you wish to perform the roll. Example 3x8,3+5  
+Roll Modifiers:
+A numberical modifier can be used by appending "+A" or "-A", where 'A' is the numerical modifier you wish to apply to the subtotal of the dice rolled.
+    Example: '8,3+5' rolls (1d8+1d3+5). '8,3-2' rolls (1d8+1d3-2). 
+You can perform the same roll multiple times by prepending "Ax", where 'A' is the number of times you want to perform the roll.
+    Example: '3x8,3' rolls (1d8+1d3) three times.
 
-Multiple rolls can be performed at once by adding a space between them.  
+Multiple rolls can be performed at once by adding a space between them.
+    Example: '8 3,8' rolls (2d8) & (1d8+1d3).
