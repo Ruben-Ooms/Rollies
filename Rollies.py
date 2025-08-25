@@ -462,7 +462,7 @@ class FabRoller(Roller):
 """
         return helpStr
 
-class AERoller(new_func(Roller)):
+class AERoller(Roller):
     # Adeptus Evangelion
     def __init__(self):
         self.dice=[]
