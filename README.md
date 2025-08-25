@@ -44,3 +44,6 @@ You can perform the same roll multiple times by prepending "Ax", where 'A' is th
 
 Multiple rolls can be performed at once by adding a space between them.
     Example: '8 3,8' rolls (2d8) & (1d8+1d3).
+    
+###
+This app can perform rolls for Adeptus Evangelion.
