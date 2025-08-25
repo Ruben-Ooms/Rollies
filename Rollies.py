@@ -1,4 +1,3 @@
-from math import floor
 from random import randrange as rand
 
 class Roller:
@@ -7,6 +6,7 @@ class Roller:
 
         for d in self.dice:
             d.roll()
+
 
 class DNDRoller(Roller):
     def __init__(self):
@@ -259,6 +259,7 @@ class AnimonRoller(Roller):
                     successes+=1
             #result+=f"\n\tSuccesses: {successes}\n"
             result+=f"Successes: {successes}\n"
+            
 
         return result
 
@@ -307,8 +308,7 @@ class FabRoller(Roller):
 
             # get numerical modifier total
             if(uP.find("+")!=-1):
-                uP=uP.replace("-","+-")
-                numMods=list(filter(None,uP.split("+")[1:]))
+                numMods=uP.split("+")[1:]
                 uP=uP.split("+")[0]
                 tempNumMod=0
                 for n in numMods:
@@ -326,13 +326,13 @@ class FabRoller(Roller):
                 m1=uP # then both die have the same number of sides
                 m2=m1
             else: # if , is found
-                # if multiple , or . error
+                # if multiple , error
                 commaCount=uP.count(",")
                 periodCount=uP.count(".")
                 if(commaCount+periodCount>1):
-                    print("Individual input can not contain more than one ',' or '.'.\n")
+                    print("Individual input can not contain more than one ','.\n")
                     return True
-                # before seperator is dice 1 faces and after is dice 2 faces
+                # before d is how many die need to be rolled and after is faces
                 if(commaCount):
                     m1=uP.split(",")[0] 
                     m2=uP.split(",")[1]
@@ -447,95 +447,14 @@ class FabRoller(Roller):
         # return Fab help string
 
         helpStr="""
-    This app can perform rolls for Fabula Ultima.
-    All rolls are performed with two dice. You can enter a single number to roll the same number twice, or two numbers separated by a comma.
-        Example: "8" rolls (2d8). "8,3" rolls (1d8+1d3).
+    This app can perform roles for Fabula Ultimate.
+    All roles are performed with a two dice. The user can enter a single number or two seperated by a comma. Example: 8 or 8,3
 
     Roll Modifiers:
-    A numberical modifier can be used by appending "+A" or "-A", where 'A' is the numerical modifier you wish to apply to the subtotal of the dice rolled.
-        Example: '8,3+5' rolls (1d8+1d3+5). '8,3-2' rolls (1d8+1d3-2). 
-    You can perform the same roll multiple times by prepending "Ax", where 'A' is the number of times you want to perform the roll.
-        Example: '3x8,3' rolls (1d8+1d3) three times.
+    A numerical modifier can be used by appending a "+a" where a is the number you wish to add to the subtotal of the two rolled dice. Example: 8,3+5
+    Multiplicity allows the user to perform the same roll numberous times. This is performed by prepending a "ax" where a is the number of times you wish to perform the roll. Example 3x8,3+5
 
     Multiple rolls can be performed at once by adding a space between them.
-        Example: '8 3,8' rolls (2d8) & (1d8+1d3).
-"""
-        return helpStr
-
-def new_func(Roller):
-    return Roller
-
-class AERoller(new_func(Roller)):
-    # Adeptus Evangelion
-    def __init__(self):
-        self.dice=[]
-        self.numMod=[]
-        self.dv=[]
-        self.target=[]
-        self.dos=[]
-
-    def parser(self,unParsed):
-        # understands the user input for number of dice, 
-        # number of sides, and modifiers
-
-        for uP in unParsed:
-
-            # get numerical modifier total
-            if(uP.find("+")!=-1 or uP.find("-")!=-1):
-                uP=uP.replace("-","+-")
-                numMods=list(filter(None,uP.split("+")[1:]))
-                tempDV=uP.split("+")[0]
-                tempNumMod=0
-                for n in numMods:
-                    if(n.lstrip("-").isnumeric()):
-                        tempNumMod+=int(n)
-                    else:
-                        print("Numerical modifiers must be an integer.\n")
-                        return True
-                self.numMod.append(tempNumMod)
-            else:
-                tempDV=uP
-                self.numMod.append(0)
-
-            # verify dv is numeric
-            if(tempDV.isnumeric()):
-                self.dv.append(int(tempDV))
-            else:
-                print("Difficulty must be positive integer.\n")
-                return True
-
-            self.dice.append(Die(1,100,"none"))
-        return False
-
-    def result(self):
-        # creates a result string to be printed in main
-
-        result=""
-        for i in range(len(self.dice)):
-            self.target.append(self.dv[i]+self.numMod[i])
-            tempDOS=(floor((self.dice[i].values[0]-self.target[i])/10))
-            # Correction for DOF
-            if(tempDOS<0):
-                tempDOS+1
-            self.dos.append(tempDOS)
-
-        result="\tRoll:   "
-        for i in range(len(self.dice)):
-            result+=str(self.dice[i].values[0])+" "
-        result+="\n\tTarget: "
-        for i in range(len(self.dice)):
-            result+=str(self.target[i])+" "
-        result+="\n\tDOS:    "
-        for i in range(len(self.dice)):
-            result+=str(self.dos[i])+" "
-
-        return result
-
-    def help(self):
-        # return AE help string
-
-        helpStr="""
-    This app can perform rolls for Adeptus Evangelion.
 """
         return helpStr
 
@@ -596,9 +515,9 @@ class Die:
 
 def getGame():
     # ensures the user enters a valid game
-    print("Enter DND, Animon, FU (Fabula Ultima), AE (Adeptus Evangelion), to select game.")
+    print("Enter DND, Animon, FU (Fabula Ultima) to select game.")
     game=""
-    validGames=["DND","Animon","Fabula Ultima","Adeptus Evangelion"]
+    validGames=["DND","Animon","Fabula Ultima"]
     while(game not in validGames):
         game=input("Enter game: ")
         game=game.split(" ")[0]
@@ -606,8 +525,6 @@ def getGame():
             game=game.upper()
         elif(game.upper()=="FU"):
             game="Fabula Ultima"
-        elif(game.upper()=="AE"):
-            game="Adeptus Evangelion"
         else:
             game=game.title() 
     return game
@@ -633,8 +550,6 @@ def main():
             tray=AnimonRoller()
         elif(game=="Fabula Ultima"):
             tray=FabRoller()
-        elif(game=="Adeptus Evangelion"):
-            tray=AERoller()
 
         userIn=input("Enter dice roll(s): ")
         # special cases for user non roll inputs
