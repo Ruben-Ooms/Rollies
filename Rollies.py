@@ -452,8 +452,8 @@ class FabRoller(Roller):
         Example: "8" rolls (2d8). "8,3" rolls (1d8+1d3).
 
     Roll Modifiers:
-    A numberical modifier can be used by appending "+A", where 'A' is the numerical modifier you wish to apply to the subtotal of the dice rolled.
-        Example: '8,3+5' rolls (1d8+1d3+5). '8,3+-2' rolls (1d8+1d3-2). 
+    A numberical modifier can be used by appending "+A" or "-A", where 'A' is the numerical modifier you wish to apply to the subtotal of the dice rolled.
+        Example: '8,3+5' rolls (1d8+1d3+5). '8,3-2' rolls (1d8+1d3-2). 
     You can perform the same roll multiple times by prepending "Ax", where 'A' is the number of times you want to perform the roll.
         Example: '3x8,3' rolls (1d8+1d3) three times.
 
@@ -512,7 +512,6 @@ class AERoller(new_func(Roller)):
 
         result=""
         for i in range(len(self.dice)):
-            print(self.dv[i],self.numMod[i],self.dv[i]+self.numMod[i])
             self.target.append(self.dv[i]+self.numMod[i])
             self.dos.append(floor((self.dice[i].values[0]-self.target[i])/10))
         result="\tRoll:   "
@@ -524,13 +523,6 @@ class AERoller(new_func(Roller)):
         result+="\n\tDOS:    "
         for i in range(len(self.dice)):
             result+=str(self.dos[i])+" "
-
-
-
-            #print(self.dice[i].values[0])
-            #print(self.dv[i])
-            #print(self.numMod[i])
-            #print(self.dos[i])
 
         return result
 
