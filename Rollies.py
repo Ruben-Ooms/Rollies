@@ -462,9 +462,6 @@ class FabRoller(Roller):
 """
         return helpStr
 
-def new_func(Roller):
-    return Roller
-
 class AERoller(new_func(Roller)):
     # Adeptus Evangelion
     def __init__(self):
@@ -513,7 +510,12 @@ class AERoller(new_func(Roller)):
         result=""
         for i in range(len(self.dice)):
             self.target.append(self.dv[i]+self.numMod[i])
-            self.dos.append(floor((self.dice[i].values[0]-self.target[i])/10))
+            tempDOS=(floor((self.dice[i].values[0]-self.target[i])/10))
+            # Correction for DOF
+            if(tempDOS<0):
+                tempDOS+1
+            self.dos.append(tempDOS)
+
         result="\tRoll:   "
         for i in range(len(self.dice)):
             result+=str(self.dice[i].values[0])+" "
